@@ -15,7 +15,7 @@ class WeatherApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Weather App',
       theme: ThemeData(
-        primaryColor: Colors.white,
+        primaryColor: Colors.white70,
         textTheme: const TextTheme(
           bodyMedium: TextStyle(color: Colors.black),
         ),
@@ -44,7 +44,7 @@ class WeatherHomePage extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.black,
+        selectedItemColor: Colors.black87,
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
