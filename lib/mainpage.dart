@@ -17,7 +17,7 @@ class _MainPageState extends State<MainPage> {
     const HomePage(),
     const Map(), // Placeholder for the map page
     const Text('Locations Page'), // Placeholder for locations page
-    // Add more pages as needed
+
   ];
 
   void _onItemTapped(int index) {
