@@ -4,6 +4,8 @@ import 'package:app1/mappage.dart';
 // Import other pages as necessary
 
 class MainPage extends StatefulWidget {
+  const MainPage({super.key});
+
   @override
   _MainPageState createState() => _MainPageState();
 }
@@ -12,9 +14,9 @@ class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
   final List<Widget> _widgetOptions = [
-    HomePage(),
-    Map(), // Placeholder for the map page
-    Text('Locations Page'), // Placeholder for locations page
+    const HomePage(),
+    const Map(), // Placeholder for the map page
+    const Text('Locations Page'), // Placeholder for locations page
     // Add more pages as needed
   ];
 
