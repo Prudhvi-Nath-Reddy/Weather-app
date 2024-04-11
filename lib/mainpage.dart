@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'HomePage.dart';
-import 'package:app1/MapPage.dart';
+import 'homepage.dart';
+import 'package:app1/mappage.dart';
 // Import other pages as necessary
 
 class MainPage extends StatefulWidget {

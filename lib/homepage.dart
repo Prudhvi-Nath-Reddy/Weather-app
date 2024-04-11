@@ -11,8 +11,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: const SafeArea(
+    return const Scaffold(
+      body: SafeArea(
         child: Column(
           children: [
             CurrentLocDate(),
@@ -22,25 +22,10 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      // BottomNavigationBar is now moved to MainPage, so it's commented out here
-      /*bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Locations'),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.black87,
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
-      ),*/
+
     );
   }
 }
-
-
-
-
 
 class CurrentLocDate extends StatelessWidget {
   const CurrentLocDate({super.key});
