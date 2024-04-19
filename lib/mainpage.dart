@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'homepage.dart';
 import 'package:app1/mappage.dart';
+import 'package:app1/location.dart';
 // Import other pages as necessary
 
 class MainPage extends StatefulWidget {
@@ -16,7 +17,7 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _widgetOptions = [
     const HomePage(),
     const Map(), // Placeholder for the map page
-    const Text('Locations Page'), // Placeholder for locations page
+    const MyApp(), // Placeholder for locations page
 
   ];
 

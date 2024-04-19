@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-
+import 'mongodb.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
@@ -53,9 +51,24 @@ class CurrentLocDate extends StatelessWidget {
 
 class CurrentWeatherSection extends StatelessWidget {
   const CurrentWeatherSection({super.key});
+  String determineLevel(String s) {
+    // Convert the input string to an integer for comparison
+    int value = int.tryParse(s) ?? 0;
+
+    if (value >= 0 && value <= 40) {
+      return "Low";
+    } else if (value > 40 && value <= 70) {
+      return "Moderate";
+    } else {
+      return "High";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    var s = retval[0]['humidity'][0].toStringAsFixed(0);
+    String comfort = determineLevel(s);
+
     return Container(
       margin: const EdgeInsets.only(left: 16.0, right: 16.0),
       padding: const EdgeInsets.all(16.0),
@@ -86,14 +99,14 @@ class CurrentWeatherSection extends StatelessWidget {
               const Icon(Icons.energy_savings_leaf, color: Colors.white),
               const SizedBox(width: 5),
               Text(
-                'Comfort level: Moderate',
+                'Comfort level: '+comfort,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
               ),
               const SizedBox(width: 10),
               const Icon(Icons.water_drop, color: Colors.white),
               const SizedBox(width: 5),
               Text(
-                'Humidity: 28%',
+                'Humidity: '+s+'%',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
               ),
             ],
@@ -105,7 +118,8 @@ class CurrentWeatherSection extends StatelessWidget {
               const Icon(Icons.thermostat, color: Colors.white,size: 100,),
               const SizedBox(height: 10),
               Text(
-                '27',
+
+                '28',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white,fontSize: 70),
 
               ),

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'mainpage.dart'; // Import MainPage
-
-void main() {
+import 'mongodb.dart';
+void main() async{
+  MongoDatabase md = MongoDatabase();
+  await md.connect();
+  print(retval[0]['humidity'][0]);
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
 
   @override
   Widget build(BuildContext context) {
