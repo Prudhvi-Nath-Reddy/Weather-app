@@ -40,12 +40,12 @@ class MyHomePage extends StatelessWidget {
               children: [
                 SizedBox(height: 10),
                 LocationCard(
-                  locationName: 'Favorite Location 1',
-                  humidityLevel: 'Humidity: 70%',
+                  locationName: 'Electronic City, Bengaluru',
+                  humidityLevel: 'Comfort Level: Moderate',
                 ),
                 LocationCard(
-                  locationName: 'Favorite Location 2',
-                  humidityLevel: 'Humidity: 65%',
+                  locationName: 'MG Road, Delhi',
+                  humidityLevel: 'Comfort Level: Low',
                 ),
               ],
             ),
