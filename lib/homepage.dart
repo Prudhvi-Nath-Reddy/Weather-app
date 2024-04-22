@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'mongodb.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
+import 'package:geocoding/geocoding.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
@@ -25,8 +28,73 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class CurrentLocDate extends StatelessWidget {
+
+
+class CurrentLocDate extends StatefulWidget {
   const CurrentLocDate({super.key});
+
+  @override
+  State<CurrentLocDate> createState() => _CurrentLocDateState();
+}
+
+class _CurrentLocDateState extends State<CurrentLocDate> {
+  String _currentLocation = 'Fetching location...';
+  String _currentDate = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _determinePosition();
+    _currentDate = DateFormat.yMMMMd('en_US').format(DateTime.now());
+  }
+
+  Future<void> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      setState(() {
+        _currentLocation = 'Location services are disabled.';
+      });
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        setState(() {
+          _currentLocation = 'Location permissions are denied';
+        });
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      setState(() {
+        _currentLocation = 'Location permissions are permanently denied, we cannot request permissions.';
+      });
+      return;
+    }
+
+    // When we reach here, permissions are granted and we can continue accessing the device's location.
+    Position position = await Geolocator.getCurrentPosition();
+    try {
+      // Use the geocoding package for reverse geocoding
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      Placemark place = placemarks[0];
+      setState(() {
+        _currentLocation = '${place.locality}, ${place.country}';
+      });
+    } catch (e) {
+      setState(() {
+        _currentLocation = "Failed to get location";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,20 +102,35 @@ class CurrentLocDate extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
-          const Icon(Icons.location_on, color: Colors.black), // Location icon
-          const SizedBox(width: 8), // Add space between the icon and the text
-          Text(
-            'Bangalore',
-            style: Theme.of(context)
-                .textTheme
-                .titleLarge
-                ?.copyWith(color: Colors.black),
+          const Icon(Icons.location_on, color: Colors.black),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _currentLocation,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(color: Colors.black),
+                ),
+                Text(
+                  _currentDate,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(color: Colors.grey),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 }
+
 
 class CurrentWeatherSection extends StatelessWidget {
   const CurrentWeatherSection({super.key});
