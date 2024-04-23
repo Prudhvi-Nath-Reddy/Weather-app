@@ -39,13 +39,11 @@ class CurrentLocDate extends StatefulWidget {
 
 class _CurrentLocDateState extends State<CurrentLocDate> {
   String _currentLocation = 'Fetching location...';
-  String _currentDate = '';
-
   @override
   void initState() {
     super.initState();
     _determinePosition();
-    _currentDate = DateFormat.yMMMMd('en_US').format(DateTime.now());
+
   }
 
   Future<void> _determinePosition() async {
@@ -71,7 +69,6 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
         return;
       }
     }
-
     if (permission == LocationPermission.deniedForever) {
       // Permissions are denied forever, handle appropriately.
       setState(() {
@@ -79,15 +76,15 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
       });
       return;
     }
-
     // When we reach here, permissions are granted and we can continue accessing the device's location.
     Position position = await Geolocator.getCurrentPosition();
     try {
       // Use the geocoding package for reverse geocoding
       List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
       Placemark place = placemarks[0];
+      print(place) ;
       setState(() {
-        _currentLocation = '${place.locality}, ${place.country}';
+        _currentLocation = '${place.administrativeArea}';
       });
     } catch (e) {
       setState(() {
@@ -115,13 +112,6 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
                       .titleLarge
                       ?.copyWith(color: Colors.black),
                 ),
-                Text(
-                  _currentDate,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(color: Colors.grey),
-                ),
               ],
             ),
           ),
@@ -147,9 +137,26 @@ class CurrentWeatherSection extends StatelessWidget {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
-    var s = retval[0]['humidity'][0].toStringAsFixed(0);
+    DateTime now = DateTime.now();
+    var _currentDateTime = DateFormat.yMMMMd('en_US').add_jm().format(now);
+    // DateTime now = DateTime.now();
+
+    int year = now.year;
+    int month = now.month;
+    int day = now.day;
+    // For hours in 24-hour format, you can use the `hour` property directly.
+    int hours = now.hour;
+    int minutes = now.minute;
+
+    // Printing each component to check
+    print("Year: $year");
+    print("Month: $month");
+    print("Day: $day");
+    print("Time: $hours:$minutes");
+    var s = retval[1]['humidity'][hours].toStringAsFixed(0);
     String comfort = determineLevel(s);
 
     return Container(
@@ -172,7 +179,7 @@ class CurrentWeatherSection extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'March 12, 2024, 11:30 AM',
+            _currentDateTime,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
           ),
           const SizedBox(height: 20),

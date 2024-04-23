@@ -4,7 +4,7 @@ import 'mongodb.dart';
 void main() async{
   MongoDatabase md = MongoDatabase();
   await md.connect();
-  print(retval[0]['humidity'][0]);
+  print(retval);
   runApp(MyApp());
 }
 
