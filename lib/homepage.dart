@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'mongodb.dart';
+import 'main.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:geocoding/geocoding.dart';
@@ -39,6 +39,43 @@ class CurrentLocDate extends StatefulWidget {
 
 class _CurrentLocDateState extends State<CurrentLocDate> {
   String _currentLocation = 'Fetching location...';
+  Map<String, int> regionCodes = {
+    'Andaman and Nicobar Islands': 1484,
+    'Andhra Pradesh': 1485,
+    'Assam': 1487,
+    'Delhi': 1489,
+    'Goa': 1490,
+    'Gujarat': 1491,
+    'Haryana': 1492,
+    'Himachal Pradesh': 1493,
+    'Karnataka': 1494,
+    'Kerala': 1495,
+    'Lakshadweep': 1496,
+    'Maharashtra': 1498,
+    'Manipur': 1500,
+    'Meghalaya': 1501,
+    'Mizoram': 1502,
+    'Nagaland': 1503,
+    'Orissa': 1504,
+    'Punjab': 1505,
+    'Rajasthan': 1506,
+    'Sikkim': 1507,
+    'Tamil Nadu': 1508,
+    'Tripura': 1509,
+    'West Bengal': 1511,
+    'Arunachal Pradesh': 70072,
+    'Bihar': 70073,
+    'Chandigarh': 70074,
+    'Chhattisgarh': 70075,
+    'Dadra and Nagar Haveli': 70076,
+    'Daman and Diu': 70077,
+    'Jharkhand': 70078,
+    'Madhya Pradesh': 70079,
+    'Puducherry': 70080,
+    'Uttar Pradesh': 70081,
+    'Uttarakhand': 70082,
+    'Telangana': 1485, // Note: Telangana has the same code as Andhra Pradesh.
+  };
   @override
   void initState() {
     super.initState();
@@ -82,7 +119,7 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
       // Use the geocoding package for reverse geocoding
       List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
       Placemark place = placemarks[0];
-      print(place) ;
+      // print(place) ;
       setState(() {
         _currentLocation = '${place.administrativeArea}';
       });
@@ -106,7 +143,7 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _currentLocation,
+                  collectionName,
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge
@@ -138,8 +175,10 @@ class CurrentWeatherSection extends StatelessWidget {
   }
 
 
+
   @override
   Widget build(BuildContext context) {
+
     DateTime now = DateTime.now();
     var _currentDateTime = DateFormat.yMMMMd('en_US').add_jm().format(now);
     // DateTime now = DateTime.now();
@@ -151,13 +190,16 @@ class CurrentWeatherSection extends StatelessWidget {
     int hours = now.hour;
     int minutes = now.minute;
 
+
     // Printing each component to check
-    print("Year: $year");
-    print("Month: $month");
-    print("Day: $day");
-    print("Time: $hours:$minutes");
-    var s = retval[1]['humidity'][hours].toStringAsFixed(0);
+    // print("Year: $year");
+    // print("Month: $month");
+    // print("Day: $day");
+    // print("Time: $hours:$minutes");
+    var s = data[0]["humidity"][hours].toStringAsFixed(0);
+    // var s = '77.5';
     String comfort = determineLevel(s);
+
 
     return Container(
       margin: const EdgeInsets.only(left: 16.0, right: 16.0),
