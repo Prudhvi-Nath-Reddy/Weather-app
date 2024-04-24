@@ -76,59 +76,59 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
     'Uttarakhand': 70082,
     'Telangana': 1485, // Note: Telangana has the same code as Andhra Pradesh.
   };
-  @override
-  void initState() {
-    super.initState();
-    _determinePosition();
-
-  }
-
-  Future<void> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Check if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      setState(() {
-        _currentLocation = 'Location services are disabled.';
-      });
-      return;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        setState(() {
-          _currentLocation = 'Location permissions are denied';
-        });
-        return;
-      }
-    }
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      setState(() {
-        _currentLocation = 'Location permissions are permanently denied, we cannot request permissions.';
-      });
-      return;
-    }
-    // When we reach here, permissions are granted and we can continue accessing the device's location.
-    Position position = await Geolocator.getCurrentPosition();
-    try {
-      // Use the geocoding package for reverse geocoding
-      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-      Placemark place = placemarks[0];
-      // print(place) ;
-      setState(() {
-        _currentLocation = '${place.administrativeArea}';
-      });
-    } catch (e) {
-      setState(() {
-        _currentLocation = "Failed to get location";
-      });
-    }
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _determinePosition();
+  //
+  // }
+  //
+  // Future<void> _determinePosition() async {
+  //   bool serviceEnabled;
+  //   LocationPermission permission;
+  //
+  //   // Check if location services are enabled.
+  //   serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  //   if (!serviceEnabled) {
+  //     setState(() {
+  //       _currentLocation = 'Location services are disabled.';
+  //     });
+  //     return;
+  //   }
+  //
+  //   permission = await Geolocator.checkPermission();
+  //   if (permission == LocationPermission.denied) {
+  //     permission = await Geolocator.requestPermission();
+  //     if (permission == LocationPermission.denied) {
+  //       setState(() {
+  //         _currentLocation = 'Location permissions are denied';
+  //       });
+  //       return;
+  //     }
+  //   }
+  //   if (permission == LocationPermission.deniedForever) {
+  //     // Permissions are denied forever, handle appropriately.
+  //     setState(() {
+  //       _currentLocation = 'Location permissions are permanently denied, we cannot request permissions.';
+  //     });
+  //     return;
+  //   }
+  //   // When we reach here, permissions are granted and we can continue accessing the device's location.
+  //   Position position = await Geolocator.getCurrentPosition();
+  //   try {
+  //     // Use the geocoding package for reverse geocoding
+  //     List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+  //     Placemark place = placemarks[0];
+  //     // print(place) ;
+  //     setState(() {
+  //       _currentLocation = '${place.administrativeArea}';
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       _currentLocation = "Failed to get location";
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {

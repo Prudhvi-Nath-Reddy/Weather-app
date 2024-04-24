@@ -1,4 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for any Bluetooth activity -->
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+
+    <!-- Required for making connections (API level 31+) -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
+
+    <!-- Optional: Required to start device discovery or manipulation settings -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+    <!-- Optional: Required if you want to access the device's location in your app -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <application
         android:label="app1"

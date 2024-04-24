@@ -15,7 +15,7 @@ void main() async {
   var mongo = MongoDatabase(location);
   data = await mongo.connect();
   print(data);
-  runApp(MyApp2());
+  runApp(MyApp());
 }
 
 Future<String?> fetchLocation() async {
@@ -48,8 +48,8 @@ Future<String?> fetchLocation() async {
   }
 }
 
-class MyApp2 extends StatelessWidget {
-  const MyApp2({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

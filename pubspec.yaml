@@ -34,7 +34,8 @@ dependencies:
   geolocator: any
   geocoding: any
   intl: any
-  webview_flutter: ^4.2.1
+  webview_flutter: ^3.0.0
+  permission_handler: ^10.0.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -59,7 +60,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - lib/map1.html
+    - assets/map1.html
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
