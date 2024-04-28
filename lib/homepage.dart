@@ -11,33 +11,6 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-double hl = 10 ;
-Future<double> fetchHumidity(String start, String end, double longitude, double latitude) async {
-  final response = await http.get(
-    Uri.parse('http://10.0.2.2:5000/get_humidity?start=$start&end=$end&longitude=$longitude&latitude=$latitude'),
-  );
-
-  if (response.statusCode == 200) {
-    var jsonResponse = jsonDecode(response.body);
-    var humidity = jsonResponse['humidity'];
-    print('Humidity: $humidity');
-    return humidity;
-  } else {
-    print('Failed to fetch humidity data.');
-    return 0; // or appropriate error handling
-  }
-}
-
-Future<void> someFunction() async {
-  String start = "2023-04-01";
-  String end = "2023-04-02";
-  Position position = await Geolocator.getCurrentPosition();
-  double humidity = await fetchHumidity(start, end, position.longitude, position.latitude);
-  hl = humidity ;
-}
-
-
-
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
@@ -104,30 +77,6 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
     'Telangana': 1485, // Note: Telangana has the same code as Andhra Pradesh.
   };
 
-// Define the function with parameters for start, end, longitude, and latitude
-//   Future<void> fetchHumidity(String start, String end, double longitude, double latitude) async {
-//     final response = await http.get(
-//       Uri.parse('http://10.0.2.2:5000/get_humidity?start=$start&end=$end&longitude=$longitude&latitude=$latitude'),
-//     );
-//
-//     if (response.statusCode == 200) {
-//       var jsonResponse = jsonDecode(response.body);
-//       var humidity = jsonResponse['humidity'];
-//       print('Humidity: $humidity');
-//       print('Humidity type: ${humidity.runtimeType}');
-//       print("success") ;
-//     } else {
-//       print('Failed to fetch humidity data.');
-//     }
-//   }
-//   Future<void> someFunction() async {
-//     String start = "2023-04-01";
-//     String end = "2023-04-02";
-//     Position position = await Geolocator.getCurrentPosition();
-//
-//     fetchHumidity(start, end, position.longitude, position.latitude);
-//   }
-
   @override
   void initState() {
     super.initState();
@@ -168,12 +117,44 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
     // When we reach here, permissions are granted and we can continue accessing the device's location.
     Position position = await Geolocator.getCurrentPosition();
     try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+        Placemark place = placemarks[0];
+        print(place) ;
       // Use the geocoding package for reverse geocoding
-      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-      Placemark place = placemarks[0];
-      print(place) ;
+      List<Map<String, String?>> locationAttributes = [
+        // {'name': place.name},
+        // {'street': place.street},
+        {'sublocality': place.subLocality},
+        {'locality': place.locality},
+        {'subAdministrativeArea': place.subAdministrativeArea},
+        {'administrativeArea': place.administrativeArea}
+      ];
+
+      // Sort the location attributes by their importance
+      locationAttributes.sort((a, b) {
+        if ((a.values.first ?? '').isEmpty && !(b.values.first ?? '').isEmpty) {
+          return 1;
+        } else if (!(a.values.first ?? '').isEmpty && (b.values.first ?? '').isEmpty) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+
+      // Extract the top 2 non-empty attributes
+      List<String> topAttributes = [];
+      for (var attribute in locationAttributes) {
+        if ((attribute.values.first ?? '').isNotEmpty) {
+          topAttributes.add(attribute.values.first!);
+        }
+        if (topAttributes.length >= 2) {
+          break;
+        }
+      }
+
+      // Join the top attributes and update the state
       setState(() {
-        _currentLocation = '${place.locality} , ${place.subAdministrativeArea}';
+        _currentLocation = topAttributes.join(', ');
       });
     } catch (e) {
       setState(() {
@@ -186,6 +167,7 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
   Widget build(BuildContext context) {
 
     // print("hi") ;
+    // _determinePosition() ;
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -212,39 +194,88 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
   }
 }
 
+class CurrentWeatherSection extends StatefulWidget {
+  const CurrentWeatherSection({Key? key}) : super(key: key);
 
-class CurrentWeatherSection extends StatelessWidget {
-  const CurrentWeatherSection({super.key});
-  String determineLevel(String s) {
-    // Convert the input string to an integer for comparison
-    int value = int.tryParse(s) ?? 0;
+  @override
+  _CurrentWeatherSectionState createState() => _CurrentWeatherSectionState();
+}
 
-    if (value >= 0 && value <= 40) {
-      return "Low";
-    } else if (value > 40 && value <= 70) {
-      return "Moderate";
-    } else {
-      return "High";
-    }
-  }
+class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
 
-
-
+  String hl = "--.--%" ;
+  String comfort  = "----";
 
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
+    // someFunction();
+    determineLevel() ;
 
+  }
+
+  Future<void> determineLevel() async {
+    await someFunction() ;
+    String s = hl ;
+
+    String rets ;
+    double value = double.tryParse(s) ?? 0.0;
+    if (value >= 0 && value <= 40) {
+      rets =  "Low";
+    } else if (value > 40 && value <= 70) {
+      rets = "Moderate";
+    } else {
+      rets =  "High";
+    }
+    setState(() {
+      comfort = rets ;
+    });
+  }
+  Future<double> fetchHumidity(String start, String end, double longitude, double latitude) async {
+    final response = await http.get(
+      Uri.parse('http://prudhvi.pythonanywhere.com/get_humidity?start=$start&end=$end&longitude=$longitude&latitude=$latitude'),
+    );
+
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
+      var humidity = jsonResponse['humidity'];
+      print('Humidity: $humidity');
+      return humidity ;
+      // print('Humidity type: ${humidity.runtimeType}');
+      // print("success") ;
+      // hl = humidity ;
+    } else {
+      print('Failed to fetch humidity data.');
+      return 0 ;
+    }
+  }
+  Future<void> someFunction() async {
+    String start = "2023-04-01";
+    String end = "2023-04-02";
+    Position position = await Geolocator.getCurrentPosition();
+
+    double rets = await fetchHumidity(start, end, position.longitude, position.latitude);
+    setState(()
+    {
+      hl = rets.toStringAsFixed(2);
+    });
+    return ;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var s = hl;
     DateTime now = DateTime.now();
     var _currentDateTime = DateFormat.yMMMMd('en_US').add_jm().format(now);
-    // DateTime now = DateTime.now();
 
-    int year = now.year;
-    int month = now.month;
-    int day = now.day;
-    // For hours in 24-hour format, you can use the `hour` property directly.
-    int hours = now.hour;
-    int minutes = now.minute;
+
+    // int year = now.year;
+    // int month = now.month;
+    // int day = now.day;
+    // // For hours in 24-hour format, you can use the `hour` property directly.
+    // int hours = now.hour;
+    // int minutes = now.minute;
 
 
     // Printing each component to check
@@ -253,12 +284,8 @@ class CurrentWeatherSection extends StatelessWidget {
     // print("Day: $day");
     // print("Time: $hours:$minutes");
     // var s = data[0]["humidity"][hours].toStringAsFixed(0);
-    someFunction() ;
-    var s = hl.toStringAsFixed(2);
-    String comfort = determineLevel(s);
-
-
-
+    // someFunction() ;
+    // comfort = determineLevel(s);
     return Container(
       margin: const EdgeInsets.only(left: 16.0, right: 16.0),
       padding: const EdgeInsets.all(16.0),
@@ -320,6 +347,7 @@ class CurrentWeatherSection extends StatelessWidget {
     );
   }
 }
+
 
 class DailyTips extends StatelessWidget {
   const DailyTips({super.key});
