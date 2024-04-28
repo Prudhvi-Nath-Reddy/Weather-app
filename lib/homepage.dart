@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'main.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:geocoding/geocoding.dart';
@@ -8,6 +10,33 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
+
+double hl = 10 ;
+Future<double> fetchHumidity(String start, String end, double longitude, double latitude) async {
+  final response = await http.get(
+    Uri.parse('http://10.0.2.2:5000/get_humidity?start=$start&end=$end&longitude=$longitude&latitude=$latitude'),
+  );
+
+  if (response.statusCode == 200) {
+    var jsonResponse = jsonDecode(response.body);
+    var humidity = jsonResponse['humidity'];
+    print('Humidity: $humidity');
+    return humidity;
+  } else {
+    print('Failed to fetch humidity data.');
+    return 0; // or appropriate error handling
+  }
+}
+
+Future<void> someFunction() async {
+  String start = "2023-04-01";
+  String end = "2023-04-02";
+  Position position = await Geolocator.getCurrentPosition();
+  double humidity = await fetchHumidity(start, end, position.longitude, position.latitude);
+  hl = humidity ;
+}
+
+
 
 class _HomePageState extends State<HomePage> {
   @override
@@ -27,8 +56,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-
 
 class CurrentLocDate extends StatefulWidget {
   const CurrentLocDate({super.key});
@@ -76,62 +103,89 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
     'Uttarakhand': 70082,
     'Telangana': 1485, // Note: Telangana has the same code as Andhra Pradesh.
   };
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _determinePosition();
-  //
-  // }
-  //
-  // Future<void> _determinePosition() async {
-  //   bool serviceEnabled;
-  //   LocationPermission permission;
-  //
-  //   // Check if location services are enabled.
-  //   serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  //   if (!serviceEnabled) {
-  //     setState(() {
-  //       _currentLocation = 'Location services are disabled.';
-  //     });
-  //     return;
-  //   }
-  //
-  //   permission = await Geolocator.checkPermission();
-  //   if (permission == LocationPermission.denied) {
-  //     permission = await Geolocator.requestPermission();
-  //     if (permission == LocationPermission.denied) {
-  //       setState(() {
-  //         _currentLocation = 'Location permissions are denied';
-  //       });
-  //       return;
-  //     }
-  //   }
-  //   if (permission == LocationPermission.deniedForever) {
-  //     // Permissions are denied forever, handle appropriately.
-  //     setState(() {
-  //       _currentLocation = 'Location permissions are permanently denied, we cannot request permissions.';
-  //     });
-  //     return;
-  //   }
-  //   // When we reach here, permissions are granted and we can continue accessing the device's location.
-  //   Position position = await Geolocator.getCurrentPosition();
-  //   try {
-  //     // Use the geocoding package for reverse geocoding
-  //     List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-  //     Placemark place = placemarks[0];
-  //     // print(place) ;
-  //     setState(() {
-  //       _currentLocation = '${place.administrativeArea}';
-  //     });
-  //   } catch (e) {
-  //     setState(() {
-  //       _currentLocation = "Failed to get location";
-  //     });
-  //   }
-  // }
+
+// Define the function with parameters for start, end, longitude, and latitude
+//   Future<void> fetchHumidity(String start, String end, double longitude, double latitude) async {
+//     final response = await http.get(
+//       Uri.parse('http://10.0.2.2:5000/get_humidity?start=$start&end=$end&longitude=$longitude&latitude=$latitude'),
+//     );
+//
+//     if (response.statusCode == 200) {
+//       var jsonResponse = jsonDecode(response.body);
+//       var humidity = jsonResponse['humidity'];
+//       print('Humidity: $humidity');
+//       print('Humidity type: ${humidity.runtimeType}');
+//       print("success") ;
+//     } else {
+//       print('Failed to fetch humidity data.');
+//     }
+//   }
+//   Future<void> someFunction() async {
+//     String start = "2023-04-01";
+//     String end = "2023-04-02";
+//     Position position = await Geolocator.getCurrentPosition();
+//
+//     fetchHumidity(start, end, position.longitude, position.latitude);
+//   }
+
+  @override
+  void initState() {
+    super.initState();
+    _determinePosition();
+
+  }
+
+  Future<void> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      setState(() {
+        _currentLocation = 'Location services are disabled.';
+      });
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        setState(() {
+          _currentLocation = 'Location permissions are denied';
+        });
+        return;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      setState(() {
+        _currentLocation = 'Location permissions are permanently denied, we cannot request permissions.';
+      });
+      return;
+    }
+    // When we reach here, permissions are granted and we can continue accessing the device's location.
+    Position position = await Geolocator.getCurrentPosition();
+    try {
+      // Use the geocoding package for reverse geocoding
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      Placemark place = placemarks[0];
+      print(place) ;
+      setState(() {
+        _currentLocation = '${place.locality} , ${place.subAdministrativeArea}';
+      });
+    } catch (e) {
+      setState(() {
+        _currentLocation = "Failed to get location";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+
+    // print("hi") ;
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -143,7 +197,7 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  collectionName,
+                  _currentLocation,
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge
@@ -176,6 +230,8 @@ class CurrentWeatherSection extends StatelessWidget {
 
 
 
+
+
   @override
   Widget build(BuildContext context) {
 
@@ -196,9 +252,11 @@ class CurrentWeatherSection extends StatelessWidget {
     // print("Month: $month");
     // print("Day: $day");
     // print("Time: $hours:$minutes");
-    var s = data[0]["humidity"][hours].toStringAsFixed(0);
-    // var s = '77.5';
+    // var s = data[0]["humidity"][hours].toStringAsFixed(0);
+    someFunction() ;
+    var s = hl.toStringAsFixed(2);
     String comfort = determineLevel(s);
+
 
 
     return Container(
