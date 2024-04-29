@@ -231,14 +231,15 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
       comfort = rets ;
     });
   }
-  Future<double> fetchHumidity(String start, String end, double longitude, double latitude) async {
+  Future<double> fetchHumidity(String start, String end,int hour, double longitude, double latitude) async {
     final response = await http.get(
-      Uri.parse('http://prudhvi.pythonanywhere.com/get_humidity?start=$start&end=$end&longitude=$longitude&latitude=$latitude'),
+      Uri.parse('http://prudhvi.pythonanywhere.com/get_humidity?start=$start&end=$end&hour=$hour&longitude=$longitude&latitude=$latitude'),
     );
 
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
       var humidity = jsonResponse['humidity'];
+
       print('Humidity: $humidity');
       return humidity ;
       // print('Humidity type: ${humidity.runtimeType}');
@@ -250,11 +251,13 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
     }
   }
   Future<void> someFunction() async {
+    DateTime now = DateTime.now();
+    int hour = now.hour ;
     String start = "2023-04-01";
     String end = "2023-04-02";
     Position position = await Geolocator.getCurrentPosition();
 
-    double rets = await fetchHumidity(start, end, position.longitude, position.latitude);
+    double rets = await fetchHumidity(start, end,hour, position.longitude, position.latitude);
     setState(()
     {
       hl = rets.toStringAsFixed(2);
@@ -269,19 +272,19 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
     var _currentDateTime = DateFormat.yMMMMd('en_US').add_jm().format(now);
 
 
-    // int year = now.year;
-    // int month = now.month;
-    // int day = now.day;
+    int year = now.year;
+    int month = now.month;
+    int day = now.day;
     // // For hours in 24-hour format, you can use the `hour` property directly.
-    // int hours = now.hour;
+    int hours = now.hour;
     // int minutes = now.minute;
 
 
     // Printing each component to check
-    // print("Year: $year");
-    // print("Month: $month");
-    // print("Day: $day");
-    // print("Time: $hours:$minutes");
+    print("Year: $year");
+    print("Month: $month");
+    print("Day: $day");
+    print("Time: $hours");
     // var s = data[0]["humidity"][hours].toStringAsFixed(0);
     // someFunction() ;
     // comfort = determineLevel(s);
