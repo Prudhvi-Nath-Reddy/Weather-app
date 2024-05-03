@@ -1,8 +1,9 @@
+import 'package:app1/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_place/google_place.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'webview.dart';
-
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -16,10 +17,25 @@ class _MapScreenState extends State<MapScreen> {
   List<String> _suggestions = []; // List to hold the suggestions
   bool _isSearchFocused = false;
 
+  late GooglePlace googlePlace;
+  List<AutocompletePrediction> predictions = [];
+
   @override
   void initState() {
     super.initState();
+    String apiKey = PLACES_API_KEY;
+    googlePlace = GooglePlace(apiKey);
     _searchController.addListener(_onSearchChanged);
+  }
+
+  void autoCompleteSearch(String value) async {
+    var result = await googlePlace.autocomplete.get(value);
+    if (result != null && result.predictions != null && mounted) {
+      print(result.predictions!.first.description);
+      setState(() {
+        predictions = result.predictions!;
+      });
+    }
   }
 
   @override
@@ -32,7 +48,8 @@ class _MapScreenState extends State<MapScreen> {
     String searchText = _searchController.text;
     if (searchText.length >= 1) {
       setState(() {
-        _suggestions = _getSuggestions(searchText);
+        // _suggestions = _getSuggestions(searchText);
+        autoCompleteSearch(searchText);
       });
     } else {
       setState(() {
@@ -56,8 +73,7 @@ class _MapScreenState extends State<MapScreen> {
       'San Jose',
     ];
     return cities
-        .where((city) =>
-        city.toLowerCase().contains(searchText.toLowerCase()))
+        .where((city) => city.toLowerCase().contains(searchText.toLowerCase()))
         .toList();
   }
 
@@ -107,6 +123,7 @@ class _MapScreenState extends State<MapScreen> {
                     onTap: () {
                       // Handle when a suggestion is tapped
                       print('Selected suggestion: ${_suggestions[index]}');
+                      // autoCompleteSearch("Bang");
                     },
                   );
                 },
@@ -117,7 +134,7 @@ class _MapScreenState extends State<MapScreen> {
           Expanded(
             child: MyWebView(
               selectedUrl:
-              "https://harsha-deep.github.io/projects/gee-humidity/map1.html",
+                  "https://harsha-deep.github.io/projects/gee-humidity/map1.html",
             ),
           ),
         ],

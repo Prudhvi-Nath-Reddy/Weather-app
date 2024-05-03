@@ -37,6 +37,7 @@ dependencies:
   webview_flutter: ^3.0.0
   permission_handler: ^10.0.0
   http: any
+  google_place: ^0.4.7
 
 
   # The following adds the Cupertino Icons font to your application.
