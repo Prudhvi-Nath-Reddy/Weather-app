@@ -1,3 +1,4 @@
+import 'package:app1/constant.dart';
 import 'package:flutter/material.dart';
 
 class Location extends StatelessWidget {
@@ -16,11 +17,13 @@ class Location extends StatelessWidget {
 
 class FavoriteLocationsScreen extends StatefulWidget {
   @override
-  _FavoriteLocationsScreenState createState() => _FavoriteLocationsScreenState();
+  _FavoriteLocationsScreenState createState() =>
+      _FavoriteLocationsScreenState();
 }
 
 class _FavoriteLocationsScreenState extends State<FavoriteLocationsScreen> {
-  List<FavoriteLocation> favoriteLocations = []; // List to store favorite locations
+  List<FavoriteLocation> favoriteLocations =
+      []; // List to store favorite locations
 
   @override
   Widget build(BuildContext context) {
@@ -35,14 +38,17 @@ class _FavoriteLocationsScreenState extends State<FavoriteLocationsScreen> {
             margin: EdgeInsets.all(8.0), // Adding margin on all four sides
             color: Colors.grey[100], // Light blue color
             child: ListTile(
-              contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Padding for ListTile content
+              contentPadding: EdgeInsets.symmetric(
+                  vertical: 8.0,
+                  horizontal: 16.0), // Padding for ListTile content
               leading: Icon(Icons.location_on),
               title: Text(favoriteLocations[index].cityName),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Text('Temperature: ${favoriteLocations[index].temperature}°C'),
-                  Text('Comfort Level: ${favoriteLocations[index].comfortLevel}'),
+                  Text(
+                      'Comfort Level: ${favoriteLocations[index].comfortLevel}'),
                   Text('Humidity: ${favoriteLocations[index].humidity}%'),
                 ],
               ),
@@ -58,7 +64,6 @@ class _FavoriteLocationsScreenState extends State<FavoriteLocationsScreen> {
           );
         },
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _navigateToAddLocationScreen(context);
@@ -91,7 +96,12 @@ class AddLocationScreen extends StatefulWidget {
 }
 
 class _AddLocationScreenState extends State<AddLocationScreen> {
-  List<String> suggestions = ['New York', 'London', 'Paris', 'Tokyo']; // Sample suggestions
+  List<String> suggestions = [
+    'New York',
+    'London',
+    'Paris',
+    'Tokyo'
+  ]; // Sample suggestions
 
   @override
   Widget build(BuildContext context) {
@@ -111,12 +121,11 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
               onChanged: (value) {
                 // Filter suggestions based on user input
                 setState(() {
-                  suggestions = [
-                    'New York',
-                    'London',
-                    'Paris',
-                    'Tokyo'
-                  ].where((location) => location.toLowerCase().startsWith(value.toLowerCase())).toList();
+                  suggestions = ['New York', 'London', 'Paris', 'Tokyo']
+                      .where((location) => location
+                          .toLowerCase()
+                          .startsWith(value.toLowerCase()))
+                      .toList();
                 });
               },
             ),
@@ -128,7 +137,20 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
                     title: Text(suggestions[index]),
                     onTap: () {
                       // Handle selection of location
-                      Navigator.pop(context, FavoriteLocation(cityName: suggestions[index], temperature: 25, comfortLevel: 'High', humidity: 60));
+                      Navigator.pop(
+                          context,
+                          FavoriteLocation(
+                              cityName: suggestions[index],
+                              temperature: 25,
+                              comfortLevel: 'High',
+                              humidity: 60));
+                      String cityName = suggestions[index];
+                      double latitude =
+                          favouriteLocations[cityName]!['latitude']!;
+                      double longitude =
+                          favouriteLocations[cityName]!['longitude']!;
+                      print(
+                          '$cityName: Latitude : $latitude, Longitude : $longitude');
                     },
                   );
                 },
@@ -147,5 +169,9 @@ class FavoriteLocation {
   final String comfortLevel;
   final int humidity;
 
-  FavoriteLocation({required this.cityName, required this.temperature, required this.comfortLevel, required this.humidity});
+  FavoriteLocation(
+      {required this.cityName,
+      required this.temperature,
+      required this.comfortLevel,
+      required this.humidity});
 }
