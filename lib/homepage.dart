@@ -279,8 +279,9 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
     int hours = now.hour;
     // int minutes = now.minute;
 
-
+    int wname = now.weekday ;
     // Printing each component to check
+    print("Weekday: $wname" ) ;
     print("Year: $year");
     print("Month: $month");
     print("Day: $day");
@@ -413,6 +414,9 @@ class WeeklyForecastList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // This would be where your list of weekly forecasts goes
+    DateTime now = DateTime.now();
+    int weekday = now.weekday ;
+    List<String> weeknames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     return Container(
       margin: const EdgeInsets.only(left: 16.0, right: 16.0,top: 16.0,bottom: 32),
       padding: const EdgeInsets.all(16.0),
@@ -431,7 +435,7 @@ class WeeklyForecastList extends StatelessWidget {
         ),
 
       ),
-      child: const Row(
+      child:  Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
 
@@ -442,11 +446,12 @@ class WeeklyForecastList extends StatelessWidget {
                 "Yesterday",
               ),
               Text("Today"),
-              Text("Monday"),
-              Text("Tuesday"),
-              Text("Wednesday"),
-              Text("Thursday"),
-              Text("Friday"),
+
+              Text(weeknames[((weekday%7)+1)%7]),
+              Text(weeknames[((weekday%7)+2)%7]),
+              Text(weeknames[((weekday%7)+3)%7]),
+              Text(weeknames[((weekday%7)+4)%7]),
+              Text(weeknames[((weekday%7)+5)%7]),
 
             ],
           ),
