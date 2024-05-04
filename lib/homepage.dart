@@ -118,7 +118,7 @@ class _CurrentLocDateState extends State<CurrentLocDate> {
     try {
         List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
         Placemark place = placemarks[0];
-        print(place) ;
+        // print(place) ;
       // Use the geocoding package for reverse geocoding
       List<Map<String, String?>> locationAttributes = [
         // {'name': place.name},
@@ -241,13 +241,13 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
       var humidity = jsonResponse['humidity'];
 
       print('Humidity: $humidity');
-      return humidity ;
+      return humidity.toDouble() ;
       // print('Humidity type: ${humidity.runtimeType}');
       // print("success") ;
       // hl = humidity ;
     } else {
       print('Failed to fetch humidity data.');
-      return 0 ;
+      return 0.0;
     }
   }
   Future<void> someFunction() async {
@@ -281,11 +281,11 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
 
     int wname = now.weekday ;
     // Printing each component to check
-    print("Weekday: $wname" ) ;
-    print("Year: $year");
-    print("Month: $month");
-    print("Day: $day");
-    print("Time: $hours");
+    // print("Weekday: $wname" ) ;
+    // print("Year: $year");
+    // print("Month: $month");
+    // print("Day: $day");
+    // print("Time: $hours");
     // var s = data[0]["humidity"][hours].toStringAsFixed(0);
     // someFunction() ;
     // comfort = determineLevel(s);
@@ -407,25 +407,136 @@ class DailyTips extends StatelessWidget {
     );
   }
 }
-
-class WeeklyForecastList extends StatelessWidget {
+class WeeklyForecastList extends StatefulWidget {
   const WeeklyForecastList({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // This would be where your list of weekly forecasts goes
-    DateTime now = DateTime.now();
-    int weekday = now.weekday ;
-    List<String> weeknames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    return Container(
-      margin: const EdgeInsets.only(left: 16.0, right: 16.0,top: 16.0,bottom: 32),
-      padding: const EdgeInsets.all(16.0),
-      decoration:BoxDecoration(
+  _WeeklyForecastListState createState() => _WeeklyForecastListState();
+}
+String determineLevel2(double T, double RH) {
+  String s = "---" ;
+  double c1 = -42.379;
+  double c2 = 2.04901523;
+  double c3 = 10.14333127;
+  double c4 = -0.22475541;
+  double c5 = -6.83783e-3;
+  double c6 = -5.481717e-2;
+  double c7 = 1.22874e-3;
+  double c8 = 8.5282e-4;
+  double c9 = -1.99e-6;
 
+  double HI = (c1 + (c2 * T) + (c3 * RH) + (c4 * T * RH) + (c5 * T * T) +
+      (c6 * RH * RH) + (c7 * T * T * RH) + (c8 * T * RH * RH) +
+      (c9 * T * T * RH * RH));
+  if(HI <=80)
+    {
+      s = "Safe" ;
+    }
+  else if(HI <=90)
+  {
+    s = "Caution" ;
+  }
+  else if(HI <=103)
+  {
+    s = "Extreme Caution" ;
+  }
+  else if(HI <=124)
+  {
+    s = "Danger" ;
+  }
+  else if(HI > 124)
+  {
+    s = "Extreme Danger" ;
+  }
+  return s;
+}
+class _WeeklyForecastListState extends State<WeeklyForecastList> {
+  int weekday = DateTime.now().weekday;
+  List<String> humidities = ["------","------","------","------","------","------","------"] ;
+  @override
+  void initState() {
+    super.initState();
+    print("cp 1");
+    someFunction().then((_) {
+      print("all done");
+    });
+  }
+
+  Future<String> determineLevel(value) async {
+    String rets = "unable to find" ;
+    if (value >= 0 && value <= 50) {
+      rets =  "Low";
+    } else if (value > 50 && value <= 70) {
+      rets = "Moderate";
+    } else {
+      rets =  "High";
+    }
+    return rets ;
+
+  }
+  Future<double> fetchHumidity(String start, String end,int hour, double longitude, double latitude) async {
+    final response = await http.get(
+      Uri.parse('http://prudhvi.pythonanywhere.com/get_humidity?start=$start&end=$end&hour=$hour&longitude=$longitude&latitude=$latitude'),
+    );
+
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
+      var humidity = jsonResponse['humidity'];
+
+      // print('Humidity: $humidity');
+      return humidity.toDouble() ;
+      // print('Humidity type: ${humidity.runtimeType}');
+      // print("success") ;
+      // hl = humidity ;
+    } else {
+      print('Failed to fetch humidity data.');
+      return 0.0 ;
+    }
+  }
+
+  Future<void> someFunction() async {
+    print("cp 2") ;
+    DateTime now = DateTime.now();
+    int hour = now.hour;
+    String start = "2023-04-01";
+    String end = "2023-04-02";
+    DateTime startDate = DateTime.parse(start);
+    DateTime previousDate = startDate.subtract(Duration(days: 1));
+    String prev = DateFormat('yyyy-MM-dd').format(previousDate);
+    print("cp 2.1") ;
+    Position position = await Geolocator.getCurrentPosition();
+    double hm1 = await fetchHumidity(prev, start, hour, position.longitude, position.latitude);
+    List<String> newHumidities = ["------","------","------","------","------","------","------"] ;
+    print("cp 2.2") ;
+
+    newHumidities[0] = await determineLevel2(90,hm1);
+    print("cp 2.3") ;
+    for (int i = 1; i < 7; i++) {
+      int add = (i - 1) * 24;
+      double h0 = await fetchHumidity(start, end, hour + add, position.longitude, position.latitude);
+      print("humidity of $i with value : $h0") ;
+      newHumidities[i] = await determineLevel2(90,h0);
+    }
+
+    setState(() {
+      humidities = newHumidities; // Update the state with new humidities once all async operations are completed
+    });
+    print("cp 3") ;
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    List<String> weeknames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    return Container(
+      margin: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 32),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
         color: Colors.white54,
         border: Border.all(
-          width: 2 ,
-          color: Colors.black ,
+          width: 2,
+          color: Colors.black,
         ),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(20.0),
@@ -433,48 +544,38 @@ class WeeklyForecastList extends StatelessWidget {
           topLeft: Radius.circular(20.0),
           topRight: Radius.circular(20.0),
         ),
-
       ),
-      child:  Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Yesterday",
-              ),
+              Text("Yesterday"),
               Text("Today"),
-
-              Text(weeknames[((weekday%7)+1)%7]),
-              Text(weeknames[((weekday%7)+2)%7]),
-              Text(weeknames[((weekday%7)+3)%7]),
-              Text(weeknames[((weekday%7)+4)%7]),
-              Text(weeknames[((weekday%7)+5)%7]),
-
+              Text(weeknames[((weekday % 7) + 1) % 7]),
+              Text(weeknames[((weekday % 7) + 2) % 7]),
+              Text(weeknames[((weekday % 7) + 3) % 7]),
+              Text(weeknames[((weekday % 7) + 4) % 7]),
+              Text(weeknames[((weekday % 7) + 5) % 7]),
             ],
           ),
-          SizedBox(width: 20,),
+          const SizedBox(width: 20),
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Moderate",
-              ),
-              Text("Moderate"),
-              Text("Moderate"),
-              Text("Moderate"),
-              Text("Moderate"),
-              Text("Low"),
-
-              Text("Moderate"),
+              Text(humidities[0]),
+              Text(humidities[1]),
+              Text(humidities[2]),
+              Text(humidities[3]),
+              Text(humidities[4]),
+              Text(humidities[5]),
+              Text(humidities[6]),
             ],
           ),
-
         ],
       ),
-
     );
   }
 }
+
