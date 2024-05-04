@@ -17,7 +17,7 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _widgetOptions = [
     const HomePage(),
     const MapScreen(), // Placeholder for the map page
-    const MyApp(), // Placeholder for locations page
+    Location(), // Placeholder for locations page
 
   ];
 

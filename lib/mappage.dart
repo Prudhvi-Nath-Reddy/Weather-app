@@ -139,15 +139,15 @@ class _MapScreenState extends State<MapScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Handle the search button press
-          print('Search button pressed');
-        },
-        child: const Icon(Icons.search),
-        backgroundColor: Colors.blue,
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     // Handle the search button press
+      //     print('Search button pressed');
+      //   },
+      //   child: const Icon(Icons.search),
+      //   backgroundColor: Colors.blue,
+      // ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

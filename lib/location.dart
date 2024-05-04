@@ -1,126 +1,151 @@
 import 'package:flutter/material.dart';
 
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
+class Location extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Remove the debug tag
-      title: 'Location Screen',
+      title: 'Favorite Locations',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: FavoriteLocationsScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class FavoriteLocationsScreen extends StatefulWidget {
+  @override
+  _FavoriteLocationsScreenState createState() => _FavoriteLocationsScreenState();
+}
+
+class _FavoriteLocationsScreenState extends State<FavoriteLocationsScreen> {
+  List<FavoriteLocation> favoriteLocations = []; // List to store favorite locations
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Favorite Locations',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        title: Text('Favorite Locations'),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 10),
-                LocationCard(
-                  locationName: 'Electronic City, Bengaluru',
-                  humidityLevel: 'Comfort Level: Moderate',
-                ),
-                LocationCard(
-                  locationName: 'MG Road, Delhi',
-                  humidityLevel: 'Comfort Level: Low',
-                ),
-              ],
-            ),
-          ),
-          Center(
-            child: SizedBox(
-              width: 200,
-              height: 42,
-              child: ElevatedButton(
+      body: ListView.builder(
+        itemCount: favoriteLocations.length,
+        itemBuilder: (context, index) {
+          return Container(
+            margin: EdgeInsets.all(8.0), // Adding margin on all four sides
+            color: Colors.grey[100], // Light blue color
+            child: ListTile(
+              contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Padding for ListTile content
+              leading: Icon(Icons.location_on),
+              title: Text(favoriteLocations[index].cityName),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Text('Temperature: ${favoriteLocations[index].temperature}°C'),
+                  Text('Comfort Level: ${favoriteLocations[index].comfortLevel}'),
+                  Text('Humidity: ${favoriteLocations[index].humidity}%'),
+                ],
+              ),
+              trailing: IconButton(
+                icon: Icon(Icons.delete),
                 onPressed: () {
-                  // Add your manage location button logic here
-                  print('Manage Location button pressed');
+                  setState(() {
+                    favoriteLocations.removeAt(index);
+                  });
                 },
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8), // Adjust the radius value here
-                  ),
-                ),
-                child: Text(
-                  'Manage Locations',
-                  style: TextStyle(
-                    color: Color(0xFF1F1F1F),
-                    fontSize: 14,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w500,
-                    height: 0.10,
-                    letterSpacing: 0.14,
-                  ),
-                ),
               ),
             ),
-          ),
-        ],
+          );
+        },
       ),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   selectedItemColor: Colors.black87,
-      //   unselectedItemColor: Colors.grey,
-      //   items: const [
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.home),
-      //       label: 'Home',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.map),
-      //       label: 'Map',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.star),
-      //       label: 'Locations',
-      //     ),
-      //   ],
-      // ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _navigateToAddLocationScreen(context);
+        },
+        backgroundColor: Colors.blue[100],
+        tooltip: 'Manage Locations',
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  // Function to navigate to add location screen
+  void _navigateToAddLocationScreen(BuildContext context) async {
+    final newLocation = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddLocationScreen()),
+    );
+
+    if (newLocation != null) {
+      setState(() {
+        favoriteLocations.add(newLocation);
+      });
+    }
+  }
+}
+
+class AddLocationScreen extends StatefulWidget {
+  @override
+  _AddLocationScreenState createState() => _AddLocationScreenState();
+}
+
+class _AddLocationScreenState extends State<AddLocationScreen> {
+  List<String> suggestions = ['New York', 'London', 'Paris', 'Tokyo']; // Sample suggestions
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Add Location'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Enter Location Name',
+              ),
+              onChanged: (value) {
+                // Filter suggestions based on user input
+                setState(() {
+                  suggestions = [
+                    'New York',
+                    'London',
+                    'Paris',
+                    'Tokyo'
+                  ].where((location) => location.toLowerCase().startsWith(value.toLowerCase())).toList();
+                });
+              },
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: suggestions.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(suggestions[index]),
+                    onTap: () {
+                      // Handle selection of location
+                      Navigator.pop(context, FavoriteLocation(cityName: suggestions[index], temperature: 25, comfortLevel: 'High', humidity: 60));
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class LocationCard extends StatelessWidget {
-  final String locationName;
-  final String humidityLevel;
+class FavoriteLocation {
+  final String cityName;
+  final int temperature;
+  final String comfortLevel;
+  final int humidity;
 
-  LocationCard({
-    required this.locationName,
-    required this.humidityLevel,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      margin: EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        leading: Icon(Icons.location_on),
-        title: Text(locationName),
-        subtitle: Text(humidityLevel),
-      ),
-    );
-  }
+  FavoriteLocation({required this.cityName, required this.temperature, required this.comfortLevel, required this.humidity});
 }
