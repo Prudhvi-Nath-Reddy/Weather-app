@@ -19,15 +19,19 @@ class _MapScreenState extends State<MapScreen> {
   bool _isLoading = false;
   bool _isSearchFocused = false;
   late String _mapUrl;
+  late String _currentDate ; // yyyy-mm-dd format
 
   @override
   void initState() {
     super.initState();
-    _mapUrl = Singleton().mapurl2; // Initial URL if needed
+    _mapUrl = Singleton().mapurl2;
+    _currentDate = Singleton().bardate ;
+
   }
 
   void setUrl(start, end, long, lat, hour, zoom) {
     setState(() {
+      Singleton().mapurl2 = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=$long&latitude=$lat&hour=$hour&zoom=$zoom";
       _mapUrl = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=$long&latitude=$lat&hour=$hour&zoom=$zoom";
     });
   }
@@ -89,51 +93,106 @@ class _MapScreenState extends State<MapScreen> {
       appBar: AppBar(
         title: Text('Map'),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          AnimatedContainer(
-            duration: Duration(milliseconds: 300),
-            height: _isSearchFocused ? 80.0 : 0.0,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+          Column(
+            children: [
+              AnimatedContainer(
+                duration: Duration(milliseconds: 300),
+                height: _isSearchFocused ? 80.0 : 0.0,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search...',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+                    ),
+                    style: TextStyle(fontSize: 18.0),
+                    onChanged: _onSearchChanged,
+                    onSubmitted: _onSubmitted,
+                  ),
                 ),
-                style: TextStyle(fontSize: 18.0),
-                onChanged: _onSearchChanged,
-                onSubmitted: _onSubmitted,
               ),
-            ),
-          ),
-          Visibility(
-            visible: _isSearchFocused && _suggestions.isNotEmpty,
-            child: Expanded(
-              child: ListView.builder(
-                itemCount: _suggestions.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(_suggestions[index]),
-                    onTap: () {
-                      _searchController.text = _suggestions[index];
-                      _onSubmitted(_suggestions[index]);
+              Visibility(
+                visible: _isSearchFocused && _suggestions.isNotEmpty,
+                child: Expanded(
+                  child: ListView.builder(
+                    itemCount: _suggestions.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(_suggestions[index]),
+                        onTap: () {
+                          _searchController.text = _suggestions[index];
+                          _onSubmitted(_suggestions[index]);
+                        },
+                      );
                     },
-                  );
-                },
+                  ),
+                ),
               ),
+              if (_isLoading)
+                Expanded(child: Center(child: CircularProgressIndicator())),
+              if (!_isLoading)
+                Expanded(
+                  child: KeyedSubtree(
+                    key: ValueKey<String>(_mapUrl),
+                    child: MyWebView(
+                      selectedUrl: _mapUrl,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          Positioned(
+            bottom: 60, // Raises the buttons up from the bottom
+            left: 50, // Start further in from the left edge
+            right: 50, // End further in from the right edge
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround, // Centers and reduces the space around
+              children: [
+                FloatingActionButton.small(
+                  onPressed: () {
+                    setState(() {
+                      Singleton().bardate = befday(_currentDate) ;
+                      _currentDate = Singleton().bardate ;
+                      var end = _currentDate ;
+                      var start = befday(_currentDate) ;
+                      DateTime now = DateTime.now();
+                      int hour = now.hour;
+                      // _mapUrl = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=78.9629&latitude=20.5937&hour=$hour&zoom=5" ;
+                      setUrl(start,end,78.9629,20.5937,hour,5);
+                      // print(_mapUrl) ;
+
+                      // Singleton().mapurl2 = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=78.9629&latitude=20.5937&hour=$hour&zoom=5" ;
+                    });
+                  },
+                  child: Icon(Icons.arrow_left),
+                ),
+                Text(_currentDate),
+                FloatingActionButton.small(
+                  onPressed: () {
+                    String todayDate = today(); // Ensure this returns the date in "yyyy-mm-dd" format
+                    if (_currentDate != todayDate) {
+                      setState(() {
+                        Singleton().bardate = nexday(_currentDate); // Assume nexday() correctly calculates the next day
+                        _currentDate = Singleton().bardate;
+                        var end = _currentDate ;
+                        var start = befday(_currentDate) ;
+                        DateTime now = DateTime.now();
+                        int hour = now.hour;
+                        // _mapUrl = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=78.9629&latitude=20.5937&hour=$hour&zoom=5" ;
+                        setUrl(start,end,78.9629,20.5937,hour,5);
+                        // Singleton().mapurl2 = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=78.9629&latitude=20.5937&hour=$hour&zoom=5" ;
+                      });
+                    }
+                  },
+                  child: Icon(Icons.arrow_right),
+                ),
+              ],
             ),
           ),
-          if (_isLoading)
-            Expanded(child: Center(child: CircularProgressIndicator())),
-          if (!_isLoading)
-            Expanded(
-              child: MyWebView(
-                selectedUrl: _mapUrl,
-              ),
-            ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
