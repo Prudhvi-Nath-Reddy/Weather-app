@@ -152,10 +152,12 @@
 //   }
 // }
 
+// BACKUP CODE
 import 'package:app1/constant.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_place/google_place.dart';
+import 'package:geocoding/geocoding.dart' as geocoding;
+import 'package:geolocator/geolocator.dart';
+import 'package:google_place/google_place.dart' as google_place;
 import 'package:webview_flutter/webview_flutter.dart';
 import 'webview.dart';
 
@@ -171,14 +173,14 @@ class _MapScreenState extends State<MapScreen> {
   List<String> _suggestions = []; // List to hold the suggestions
   bool _isSearchFocused = false;
 
-  late GooglePlace googlePlace;
-  List<AutocompletePrediction> predictions = [];
+  late google_place.GooglePlace googlePlace;
+  List<google_place.AutocompletePrediction> predictions = [];
 
   @override
   void initState() {
     super.initState();
     String apiKey = PLACES_API_KEY;
-    googlePlace = GooglePlace(apiKey);
+    googlePlace = google_place.GooglePlace(apiKey);
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -210,6 +212,15 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  void _onSubmitted(String value) async {
+    print('Search text: $value');
+    List<geocoding.Location> locations =
+        await geocoding.locationFromAddress(value);
+    for (var location in locations) {
+      print('Latitude: ${location.latitude}, Longitude: ${location.longitude}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -218,9 +229,10 @@ class _MapScreenState extends State<MapScreen> {
       ),
       body: Column(
         children: [
-          // Search bar
-          Visibility(
-            visible: _isSearchFocused,
+          // Animated search bar
+          AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            height: _isSearchFocused ? 80.0 : 0.0,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
@@ -228,7 +240,10 @@ class _MapScreenState extends State<MapScreen> {
                 decoration: InputDecoration(
                   hintText: 'Search...',
                   border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
                 ),
+                style: TextStyle(fontSize: 18.0),
                 onChanged: (value) {
                   // Handle search text changes
                   if (value.isEmpty) {
@@ -237,6 +252,7 @@ class _MapScreenState extends State<MapScreen> {
                     });
                   }
                 },
+                onSubmitted: _onSubmitted, // Add onSubmitted callback
               ),
             ),
           ),
@@ -271,6 +287,10 @@ class _MapScreenState extends State<MapScreen> {
         onPressed: () {
           setState(() {
             _isSearchFocused = !_isSearchFocused;
+            if (!_isSearchFocused) {
+              _searchController.clear();
+              _suggestions.clear();
+            }
           });
         },
         child: _isSearchFocused ? Icon(Icons.close) : Icon(Icons.search),
