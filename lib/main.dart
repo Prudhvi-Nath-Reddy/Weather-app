@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'func.dart';
 import 'mainpage.dart';
 import 'mongodb.dart';
 
@@ -8,46 +9,13 @@ String collectionName = "Assam";
 var data; // Specify the collection name
 
 void main() async {
-  // WidgetsFlutterBinding.ensureInitialized();  // Ensure Flutter bindings are initialized
-  // var location = await fetchLocation();
-  // location ??= "Delhi";
-  // collectionName = location ;
-  // var mongo = MongoDatabase(location);
-  // data = await mongo.connect();
-  // // print(data);
+  DateTime now = DateTime.now();
+  int hour = now.hour ;
+  String end = today();
+  String start = befday(end);
+  Singleton().mapurl2 = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=78.9629&latitude=20.5937&hour=$hour&zoom=5" ;
   runApp(MyApp());
 }
-
-// Future<String?> fetchLocation() async {
-//   bool serviceEnabled;
-//   LocationPermission permission;
-//
-//   serviceEnabled = await Geolocator.isLocationServiceEnabled();
-//   if (!serviceEnabled) {
-//     return 'Location services are disabled.';
-//   }
-//
-//   permission = await Geolocator.checkPermission();
-//   if (permission == LocationPermission.denied) {
-//     permission = await Geolocator.requestPermission();
-//     if (permission == LocationPermission.denied) {
-//       return 'Location permissions are denied';
-//     }
-//   }
-//   if (permission == LocationPermission.deniedForever) {
-//     return 'Location permissions are permanently denied, we cannot request permissions.';
-//   }
-//
-//   try {
-//     Position position = await Geolocator.getCurrentPosition();
-//     List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-//     Placemark place = placemarks[0];
-//     return place.administrativeArea; // or any other location detail you need
-//   } catch (e) {
-//     return "Failed to get location";
-//   }
-// }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
