@@ -19,26 +19,28 @@ class _MapScreenState extends State<MapScreen> {
   bool _isLoading = false;
   bool _isSearchFocused = false;
   late String _mapUrl;
-  late String _currentDate ; // yyyy-mm-dd format
+  late String _currentDate; // yyyy-mm-dd format
 
   @override
   void initState() {
     super.initState();
     _mapUrl = Singleton().mapurl2;
-    _currentDate = Singleton().bardate ;
-
+    _currentDate = Singleton().bardate;
   }
 
   void setUrl(start, end, long, lat, hour, zoom) {
     setState(() {
-      Singleton().mapurl2 = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=$long&latitude=$lat&hour=$hour&zoom=$zoom";
-      _mapUrl = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=$long&latitude=$lat&hour=$hour&zoom=$zoom";
+      Singleton().mapurl2 =
+          "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=$long&latitude=$lat&hour=$hour&zoom=$zoom";
+      _mapUrl =
+          "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=$long&latitude=$lat&hour=$hour&zoom=$zoom";
     });
   }
 
   Future<void> _fetchAutoComplete(String searchTerm) async {
     setState(() => _isLoading = true);
-    String apiUrl = 'https://api.locationiq.com/v1/autocomplete?key=pk.e9c26940466d145644091d82289a570d&q=$searchTerm&limit=5';
+    String apiUrl =
+        'https://api.locationiq.com/v1/autocomplete?key=pk.e9c26940466d145644091d82289a570d&q=$searchTerm&limit=5';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -72,8 +74,10 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _onSubmitted(String value) async {
+    FocusScope.of(context).unfocus(); // Close the keyboard
     setState(() => _isLoading = true);
-    List<geocoding.Location> locations = await geocoding.locationFromAddress(value);
+    List<geocoding.Location> locations =
+        await geocoding.locationFromAddress(value);
     String end = today();
     String start = befday(end);
     DateTime now = DateTime.now();
@@ -85,6 +89,17 @@ class _MapScreenState extends State<MapScreen> {
       print('Latitude: $lat, Longitude: $long');
     }
     setState(() => _isLoading = false);
+    _toggleSearch(); // Close search bar after submitting
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _isSearchFocused = !_isSearchFocused;
+      if (!_isSearchFocused) {
+        _searchController.clear();
+        _suggestions.clear();
+      }
+    });
   }
 
   @override
@@ -107,7 +122,8 @@ class _MapScreenState extends State<MapScreen> {
                     decoration: InputDecoration(
                       hintText: 'Search...',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: 20.0, horizontal: 20.0),
                     ),
                     style: TextStyle(fontSize: 18.0),
                     onChanged: _onSearchChanged,
@@ -150,22 +166,19 @@ class _MapScreenState extends State<MapScreen> {
             left: 50, // Start further in from the left edge
             right: 50, // End further in from the right edge
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround, // Centers and reduces the space around
+              mainAxisAlignment: MainAxisAlignment
+                  .spaceAround, // Centers and reduces the space around
               children: [
                 FloatingActionButton.small(
                   onPressed: () {
                     setState(() {
-                      Singleton().bardate = befday(_currentDate) ;
-                      _currentDate = Singleton().bardate ;
-                      var end = _currentDate ;
-                      var start = befday(_currentDate) ;
+                      Singleton().bardate = befday(_currentDate);
+                      _currentDate = Singleton().bardate;
+                      var end = _currentDate;
+                      var start = befday(_currentDate);
                       DateTime now = DateTime.now();
                       int hour = now.hour;
-                      // _mapUrl = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=78.9629&latitude=20.5937&hour=$hour&zoom=5" ;
-                      setUrl(start,end,78.9629,20.5937,hour,5);
-                      // print(_mapUrl) ;
-
-                      // Singleton().mapurl2 = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=78.9629&latitude=20.5937&hour=$hour&zoom=5" ;
+                      setUrl(start, end, 78.9629, 20.5937, hour, 5);
                     });
                   },
                   child: Icon(Icons.arrow_left),
@@ -173,18 +186,18 @@ class _MapScreenState extends State<MapScreen> {
                 Text(_currentDate),
                 FloatingActionButton.small(
                   onPressed: () {
-                    String todayDate = today(); // Ensure this returns the date in "yyyy-mm-dd" format
+                    String todayDate =
+                        today(); // Ensure this returns the date in "yyyy-mm-dd" format
                     if (_currentDate != todayDate) {
                       setState(() {
-                        Singleton().bardate = nexday(_currentDate); // Assume nexday() correctly calculates the next day
+                        Singleton().bardate = nexday(
+                            _currentDate); // Assume nexday() correctly calculates the next day
                         _currentDate = Singleton().bardate;
-                        var end = _currentDate ;
-                        var start = befday(_currentDate) ;
+                        var end = _currentDate;
+                        var start = befday(_currentDate);
                         DateTime now = DateTime.now();
                         int hour = now.hour;
-                        // _mapUrl = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=78.9629&latitude=20.5937&hour=$hour&zoom=5" ;
-                        setUrl(start,end,78.9629,20.5937,hour,5);
-                        // Singleton().mapurl2 = "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=78.9629&latitude=20.5937&hour=$hour&zoom=5" ;
+                        setUrl(start, end, 78.9629, 20.5937, hour, 5);
                       });
                     }
                   },
@@ -196,15 +209,7 @@ class _MapScreenState extends State<MapScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            _isSearchFocused = !_isSearchFocused;
-            if (!_isSearchFocused) {
-              _searchController.clear();
-              _suggestions.clear();
-            }
-          });
-        },
+        onPressed: _toggleSearch,
         child: _isSearchFocused ? Icon(Icons.close) : Icon(Icons.search),
         backgroundColor: Colors.blue,
       ),
