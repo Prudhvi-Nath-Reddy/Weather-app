@@ -166,6 +166,7 @@ class CurrentWeatherSection extends StatefulWidget {
 class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
 
   String hl = "--.--%" ;
+  String temp = "--.--" ;
   String comfort  = "----";
 
 
@@ -176,43 +177,73 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
     determineLevel() ;
 
   }
+  String determineLevel2(double T, double RH) {
+    String s = "Predicting..." ;
+    double c1 = -42.379;
+    double c2 = 2.04901523;
+    double c3 = 10.14333127;
+    double c4 = -0.22475541;
+    double c5 = -6.83783e-3;
+    double c6 = -5.481717e-2;
+    double c7 = 1.22874e-3;
+    double c8 = 8.5282e-4;
+    double c9 = -1.99e-6;
+
+    double HI = (c1 + (c2 * T) + (c3 * RH) + (c4 * T * RH) + (c5 * T * T) +
+        (c6 * RH * RH) + (c7 * T * T * RH) + (c8 * T * RH * RH) +
+        (c9 * T * T * RH * RH));
+    if(HI <=80)
+    {
+      s = "Safe" ;
+    }
+    else if(HI <=90)
+    {
+      s = "OK" ;
+    }
+    else if(HI <=103)
+    {
+      s = "Caution" ;
+    }
+    else if(HI <=124)
+    {
+      s = "Not OK" ;
+    }
+    else if(HI > 124)
+    {
+      s = "Danger" ;
+    }
+    return s;
+  }
 
   Future<void> determineLevel() async {
     await someFunction() ;
-    String s = hl ;
+    double rh = double.parse(hl);
+    double tem = double.parse(temp);
+    double fah = (tem * 9 / 5) + 32;
+    String rets = determineLevel2(fah, rh) ;
 
-    String rets ;
-    double value = double.tryParse(s) ?? 0.0;
-    if (value >= 0 && value <= 40) {
-      rets =  "Low";
-    } else if (value > 40 && value <= 70) {
-      rets = "Moderate";
-    } else {
-      rets =  "High";
-    }
     setState(() {
       comfort = rets ;
     });
   }
-  Future<double> fetchHumidity(String start, String end,int hour, double longitude, double latitude) async {
+  Future<Map<String, double>> fetchHumidity(String start, String end, int hour, double longitude, double latitude) async {
     final response = await http.get(
       Uri.parse('http://prudhvi.pythonanywhere.com/get_humidity?start=$start&end=$end&hour=$hour&longitude=$longitude&latitude=$latitude'),
     );
 
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
-      var humidity = jsonResponse['humidity'];
+      var humidity = jsonResponse['humidity'].toDouble();
+      var temp = jsonResponse['temperature'].toDouble();
 
-      print('Humidity: $humidity');
-      return humidity.toDouble() ;
-      // print('Humidity type: ${humidity.runtimeType}');
-      // print("success") ;
-      // hl = humidity ;
+      print('Humidity: $humidity, Temperature: $temp');
+      return {'humidity': humidity, 'temperature': temp};
     } else {
       print('Failed to fetch humidity data.');
-      return 0.0;
+      return {'humidity': 0.0, 'temperature': 0.0};
     }
   }
+
   Future<void> someFunction() async {
     DateTime now = DateTime.now();
     int hour = now.hour ;
@@ -221,10 +252,17 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
 
     Position position = await Geolocator.getCurrentPosition();
 
-    double rets = await fetchHumidity(start, end,hour, position.longitude, position.latitude);
+    var ht = await fetchHumidity(start, end,hour, position.longitude, position.latitude);
+
     setState(()
     {
-      hl = rets.toStringAsFixed(2);
+      double hfah = (ht['temperature'] ?? 0.0) ;
+      hfah = ((hfah - 32) * 5 / 9);
+
+
+      hl = (ht['humidity'] ?? 0.0).toStringAsFixed(2);
+      temp = hfah.toStringAsFixed(2);
+
     });
     return ;
   }
@@ -232,6 +270,7 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
   @override
   Widget build(BuildContext context) {
     var s = hl;
+    var t = temp ;
     DateTime now = DateTime.now();
     var _currentDateTime = DateFormat.yMMMMd('en_US').add_jm().format(now);
 
@@ -302,7 +341,7 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
               const SizedBox(height: 10),
               Text(
 
-                '28',
+                t,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white,fontSize: 70),
 
               ),
@@ -377,7 +416,7 @@ class WeeklyForecastList extends StatefulWidget {
   _WeeklyForecastListState createState() => _WeeklyForecastListState();
 }
 String determineLevel2(double T, double RH) {
-  String s = "---" ;
+  String s = "Predicting..." ;
   double c1 = -42.379;
   double c2 = 2.04901523;
   double c3 = 10.14333127;
@@ -392,24 +431,24 @@ String determineLevel2(double T, double RH) {
       (c6 * RH * RH) + (c7 * T * T * RH) + (c8 * T * RH * RH) +
       (c9 * T * T * RH * RH));
   if(HI <=80)
-    {
-      s = "Safe" ;
-    }
+  {
+    s = "Safe" ;
+  }
   else if(HI <=90)
   {
-    s = "Caution" ;
+    s = "OK" ;
   }
   else if(HI <=103)
   {
-    s = "Extreme Caution" ;
+    s = "Caution" ;
   }
   else if(HI <=124)
   {
-    s = "Danger" ;
+    s = "Not OK" ;
   }
   else if(HI > 124)
   {
-    s = "Extreme Danger" ;
+    s = "Danger" ;
   }
   return s;
 }
@@ -437,23 +476,21 @@ class _WeeklyForecastListState extends State<WeeklyForecastList> {
     return rets ;
 
   }
-  Future<double> fetchHumidity(String start, String end,int hour, double longitude, double latitude) async {
+  Future<Map<String, double>> fetchHumidity(String start, String end, int hour, double longitude, double latitude) async {
     final response = await http.get(
       Uri.parse('http://prudhvi.pythonanywhere.com/get_humidity?start=$start&end=$end&hour=$hour&longitude=$longitude&latitude=$latitude'),
     );
 
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
-      var humidity = jsonResponse['humidity'];
+      var humidity = jsonResponse['humidity'].toDouble();
+      var temp = jsonResponse['temperature'].toDouble();
 
-      // print('Humidity: $humidity');
-      return humidity.toDouble() ;
-      // print('Humidity type: ${humidity.runtimeType}');
-      // print("success") ;
-      // hl = humidity ;
+      print('Humidity: $humidity, Temperature: $temp');
+      return {'humidity': humidity, 'temperature': temp};
     } else {
       print('Failed to fetch humidity data.');
-      return 0.0 ;
+      return {'humidity': 0.0, 'temperature': 0.0};
     }
   }
 
@@ -468,17 +505,21 @@ class _WeeklyForecastListState extends State<WeeklyForecastList> {
     String prev = DateFormat('yyyy-MM-dd').format(previousDate);
     print("cp 2.1") ;
     Position position = await Geolocator.getCurrentPosition();
-    double hm1 = await fetchHumidity(prev, start, hour, position.longitude, position.latitude);
+    var ht = await fetchHumidity(start, end, hour, position.longitude, position.latitude);
+    double hm1= (ht['humidity'] ?? 0.0) ;
+    double temp = (ht['temperature'] ?? 0.0) ;
     List<String> newHumidities = ["------","------","------","------","------","------","------"] ;
     print("cp 2.2") ;
 
-    newHumidities[0] = await determineLevel2(90,hm1);
+    newHumidities[0] = await determineLevel2(temp,hm1);
     print("cp 2.3") ;
     for (int i = 1; i < 7; i++) {
       int add = (i - 1) * 24;
-      double h0 = await fetchHumidity(start, end, hour + add, position.longitude, position.latitude);
-      print("humidity of $i with value : $h0") ;
-      newHumidities[i] = await determineLevel2(90,h0);
+      var ht = await fetchHumidity(start, end, hour+add, position.longitude, position.latitude);
+      double h0= (ht['humidity'] ?? 0.0) ;
+      double temp = (ht['temperature'] ?? 0.0) ;
+      print(" $i with humidity : $h0 and temp : $temp") ;
+      newHumidities[i] = await determineLevel2(temp,h0);
     }
 
     setState(() {
