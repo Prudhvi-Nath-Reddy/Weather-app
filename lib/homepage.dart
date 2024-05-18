@@ -5,6 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:geocoding/geocoding.dart';
 import 'func.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
@@ -359,56 +361,73 @@ class DailyTips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // This would be where your list of weekly forecasts goes
-    return Container(
-      margin: const EdgeInsets.only(left: 16.0, right: 16.0,top: 16.0,bottom: 16.0),
-      padding: const EdgeInsets.all(16.0),
-      decoration:BoxDecoration(
+    final PageController _pageController = PageController();
 
-        color: Colors.white54,
-        border: Border.all(
-          width: 2 ,
-          color: Colors.black ,
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(20.0),
-          bottomRight: Radius.circular(20.0),
-          topLeft: Radius.circular(20.0),
-          topRight: Radius.circular(20.0),
-        ),
-
-      ),
-      child: const Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          margin: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.white54,
+            border: Border.all(
+              width: 2,
+              color: Colors.black,
+            ),
+            borderRadius: const BorderRadius.all(Radius.circular(20.0)),
+          ),
+          height: 100, // fixed height for the carousel container
+          child: PageView(
+            controller: _pageController,
             children: [
-              Text(
-                "Today's Temperature",
+              Container(
+                color: Colors.white,
+                child: Center(
+                  child: Text(
+                    "Tip 1: Stay hydrated",
+                    style: Theme.of(context).textTheme.bodyText1,
+                  ),
+                ),
               ),
-
-
+              Container(
+                color: Colors.white,
+                child: Center(
+                  child: Text(
+                    "Tip 2: Wear sunscreen",
+                    style: Theme.of(context).textTheme.bodyText1,
+                  ),
+                ),
+              ),
+              Container(
+                color: Colors.white,
+                child: Center(
+                  child: Text(
+                    "Tip 3: Avoid peak sun hours",
+                    style: Theme.of(context).textTheme.bodyText1,
+                  ),
+                ),
+              ),
             ],
           ),
-          SizedBox(height: 20,),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Almost as same as Yesterday",
-              ),
-
-            ],
+        ),
+        const SizedBox(height: 8),
+        SmoothPageIndicator(
+          controller: _pageController,
+          count: 3,
+          effect: const WormEffect(
+            dotHeight: 8,
+            dotWidth: 8,
+            spacing: 16,
+            dotColor: Colors.grey,
+            activeDotColor: Colors.blue,
           ),
-
-        ],
-      ),
-
+        ),
+      ],
     );
   }
 }
+
 class WeeklyForecastList extends StatefulWidget {
   const WeeklyForecastList({super.key});
 
