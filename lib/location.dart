@@ -224,8 +224,9 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
       var ht = await fetchHumidity(start, end,hour+24, long, lat);
       double hfah = (ht['temperature'] ?? 0.0) ;
       double hl = (ht['humidity'] ?? 0.0) ;
-      hfah = ((hfah - 32) * 5 / 9);
       String comfort = determineLevel2(hfah, hl) ;
+      hfah = ((hfah - 32) * 5 / 9);
+
 
       FavoriteLocation newLocation = FavoriteLocation(
           cityName: cityName,

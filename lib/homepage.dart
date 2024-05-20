@@ -219,14 +219,14 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
 
   Future<void> determineLevel() async {
     await someFunction() ;
-    double rh = double.parse(hl);
-    double tem = double.parse(temp);
-    double fah = (tem * 9 / 5) + 32;
-    String rets = determineLevel2(fah, rh) ;
-
-    setState(() {
-      comfort = rets ;
-    });
+    // double rh = double.parse(hl);
+    // double tem = double.parse(temp);
+    // double fah = (tem * 9 / 5) + 32;
+    // String rets = determineLevel2(fah, rh) ;
+    //
+    // setState(() {
+    //   comfort = rets ;
+    // });
   }
   Future<Map<String, double>> fetchHumidity(String start, String end, int hour, double longitude, double latitude) async {
     final response = await http.get(
@@ -254,8 +254,8 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
 
     Position position = await Geolocator.getCurrentPosition();
 
-    var ht = await fetchHumidity(start, end,hour, position.longitude, position.latitude);
-
+    var ht = await fetchHumidity(start, end,hour+24, position.longitude, position.latitude);
+    String rets = determineLevel2((ht['temperature'] ?? 0.0), (ht['humidity'] ?? 0.0)) ;
     setState(()
     {
       double hfah = (ht['temperature'] ?? 0.0) ;
@@ -263,7 +263,7 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
 
 
       hl = (ht['humidity'] ?? 0.0).toStringAsFixed(2);
-
+      comfort = rets ;
       temp = hfah.toStringAsFixed(2);
       Singleton().prelev = "Humidity : $hl , Temperature ; $temp";
 
