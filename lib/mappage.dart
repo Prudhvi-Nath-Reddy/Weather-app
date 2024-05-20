@@ -20,20 +20,54 @@ class _MapScreenState extends State<MapScreen> {
   bool _isSearchFocused = false;
   late String _mapUrl;
   late String _currentDate; // yyyy-mm-dd format
+  String topht = Singleton().prelev ;
 
   @override
   void initState() {
     super.initState();
     _mapUrl = Singleton().mapurl2;
     _currentDate = Singleton().bardate;
-  }
 
+  }
+  Future<Map<String, double>> fetchHumidity(String start, String end, int hour, double longitude, double latitude) async {
+    final response = await http.get(
+      Uri.parse('http://prudhvi.pythonanywhere.com/get_humidity?start=$start&end=$end&hour=$hour&longitude=$longitude&latitude=$latitude'),
+    );
+
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
+      var humidity = jsonResponse['humidity'].toDouble();
+      var temp = jsonResponse['temperature'].toDouble();
+
+      print('Humidity: $humidity, Temperature: $temp');
+      return {'humidity': humidity, 'temperature': temp};
+    } else {
+      print('Failed to fetch humidity data.');
+      return {'humidity': 0.0, 'temperature': 0.0};
+    }
+  }
   void setUrl(start, end, long, lat, hour, zoom) {
-    setState(() {
+    setState((){
       Singleton().mapurl2 =
           "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=$long&latitude=$lat&hour=$hour&zoom=$zoom";
       _mapUrl =
           "https://prudhvi.pythonanywhere.com/get_map?start=$start&end=$end&longitude=$long&latitude=$lat&hour=$hour&zoom=$zoom";
+
+    });
+  }
+  Future<void> sethnt(start,end,hour,long,lat)
+  async {
+    var ht = await fetchHumidity(start, end,hour, long, lat);
+    double hfah = (ht['temperature'] ?? 0.0) ;
+    hfah = ((hfah - 32) * 5 / 9);
+
+
+    var hl = (ht['humidity'] ?? 0.0).toStringAsFixed(2);
+
+    var temp = hfah.toStringAsFixed(2);
+    Singleton().prelev = "Humidity : $hl , Temperature ; $temp";
+    setState(() {
+      topht = Singleton().prelev ;
     });
   }
 
@@ -85,7 +119,9 @@ class _MapScreenState extends State<MapScreen> {
     for (var location in locations) {
       var long = location.longitude;
       var lat = location.latitude;
-      setUrl(start, end, long, lat, hour, 8);
+      sethnt(start, end, hour+24, long, lat) ;
+      setUrl(start, end, long, lat, hour+24, 8);
+
       print('Latitude: $lat, Longitude: $long');
     }
     setState(() => _isLoading = false);
@@ -112,6 +148,7 @@ class _MapScreenState extends State<MapScreen> {
         children: [
           Column(
             children: [
+              Text(topht) ,
               AnimatedContainer(
                 duration: Duration(milliseconds: 300),
                 height: _isSearchFocused ? 80.0 : 0.0,
@@ -178,12 +215,37 @@ class _MapScreenState extends State<MapScreen> {
                       var start = befday(_currentDate);
                       DateTime now = DateTime.now();
                       int hour = now.hour;
-                      setUrl(start, end, 78.9629, 20.5937, hour, 5);
+                      sethnt(start, end, hour+24, 78.9629, 20.5937) ;
+                      setUrl(start, end, 78.9629, 20.5937, hour+24, 5);
+
+
                     });
                   },
                   child: Icon(Icons.arrow_left),
                 ),
-                Text(_currentDate),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        spreadRadius: 0,
+                        blurRadius: 4,
+                        offset: Offset(0, 2), // changes position of shadow
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    _currentDate,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
                 FloatingActionButton.small(
                   onPressed: () {
                     String todayDate =
@@ -197,7 +259,9 @@ class _MapScreenState extends State<MapScreen> {
                         var start = befday(_currentDate);
                         DateTime now = DateTime.now();
                         int hour = now.hour;
-                        setUrl(start, end, 78.9629, 20.5937, hour, 5);
+                        sethnt(start, end, hour+24, 78.9629, 20.5937) ;
+                        setUrl(start, end, 78.9629, 20.5937, hour+24, 5);
+
                       });
                     }
                   },

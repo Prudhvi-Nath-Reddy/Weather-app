@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart' as geocoding;
-
+import 'func.dart';
 const String apiKey = 'pk.e9c26940466d145644091d82289a570d';
 
 class Location extends StatelessWidget {
@@ -27,8 +27,13 @@ class FavoriteLocationsScreen extends StatefulWidget {
 }
 
 class _FavoriteLocationsScreenState extends State<FavoriteLocationsScreen> {
-  List<FavoriteLocation> favoriteLocations =
-      []; // List to store favorite locations
+  List<FavoriteLocation> favoriteLocations = [];
+  @override
+  void initState() {
+    super.initState();
+    // Retrieve the favorite locations from the singleton
+    favoriteLocations = Singleton().getLocations();
+  }// List to store favorite locations
 
   @override
   Widget build(BuildContext context) {
@@ -53,14 +58,17 @@ class _FavoriteLocationsScreenState extends State<FavoriteLocationsScreen> {
                 children: [
                   Text(
                       'Comfort Level: ${favoriteLocations[index].comfortLevel}'),
-                  Text('Humidity: ${favoriteLocations[index].humidity}%'),
+                  Text('Humidity: ${favoriteLocations[index].humidity.toStringAsFixed(2)} %'),
+                  Text('Temperature: ${favoriteLocations[index].temperature.toStringAsFixed(2)}° C'),
                 ],
               ),
               trailing: IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () {
+                  Singleton().removeLocation(index);
                   setState(() {
-                    favoriteLocations.removeAt(index);
+                    favoriteLocations = Singleton().getLocations();
+
                   });
                 },
               ),
@@ -87,9 +95,12 @@ class _FavoriteLocationsScreenState extends State<FavoriteLocationsScreen> {
     );
 
     if (newLocation != null) {
+      Singleton().addLocation(newLocation);
       setState(() {
-        favoriteLocations.add(newLocation);
+
+        favoriteLocations = Singleton().getLocations();
       });
+
     }
   }
 }
@@ -143,7 +154,60 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
       }
     });
   }
+  Future<Map<String, double>> fetchHumidity(String start, String end, int hour, double longitude, double latitude) async {
+    final response = await http.get(
+      Uri.parse('http://prudhvi.pythonanywhere.com/get_humidity?start=$start&end=$end&hour=$hour&longitude=$longitude&latitude=$latitude'),
+    );
 
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
+      var humidity = jsonResponse['humidity'].toDouble();
+      var temp = jsonResponse['temperature'].toDouble();
+
+      print('Humidity: $humidity, Temperature: $temp');
+      return {'humidity': humidity, 'temperature': temp};
+    } else {
+      print('Failed to fetch humidity data.');
+      return {'humidity': 0.0, 'temperature': 0.0};
+    }
+  }
+  String determineLevel2(double T, double RH) {
+    String s = "Predicting..." ;
+    double c1 = -42.379;
+    double c2 = 2.04901523;
+    double c3 = 10.14333127;
+    double c4 = -0.22475541;
+    double c5 = -6.83783e-3;
+    double c6 = -5.481717e-2;
+    double c7 = 1.22874e-3;
+    double c8 = 8.5282e-4;
+    double c9 = -1.99e-6;
+
+    double HI = (c1 + (c2 * T) + (c3 * RH) + (c4 * T * RH) + (c5 * T * T) +
+        (c6 * RH * RH) + (c7 * T * T * RH) + (c8 * T * RH * RH) +
+        (c9 * T * T * RH * RH));
+    if(HI <=80)
+    {
+      s = "Comfortable" ;
+    }
+    else if(HI <=90)
+    {
+      s = "Good" ;
+    }
+    else if(HI <=103)
+    {
+      s = "Average" ;
+    }
+    else if(HI <=124)
+    {
+      s = "Not Good" ;
+    }
+    else if(HI > 124)
+    {
+      s = "Bad" ;
+    }
+    return s;
+  }
   void _onSubmitted(String value) async {
     FocusScope.of(context).unfocus(); // Close the keyboard
     setState(() => _isLoading = true);
@@ -153,14 +217,23 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
       var cityName = value;
       var lat = location.latitude;
       var long = location.longitude;
-      // You can add more fields as necessary
-      Navigator.pop(
-          context,
-          FavoriteLocation(
-              cityName: cityName,
-              temperature: 25,
-              comfortLevel: 'High',
-              humidity: 60));
+      var start = befday(today()) ;
+      var end = today() ;
+      DateTime now = DateTime.now();
+      int hour = now.hour;
+      var ht = await fetchHumidity(start, end,hour+24, long, lat);
+      double hfah = (ht['temperature'] ?? 0.0) ;
+      double hl = (ht['humidity'] ?? 0.0) ;
+      hfah = ((hfah - 32) * 5 / 9);
+      String comfort = determineLevel2(hfah, hl) ;
+
+      FavoriteLocation newLocation = FavoriteLocation(
+          cityName: cityName,
+          temperature: hfah,
+          comfortLevel: comfort,
+          humidity: hl
+      );
+      Navigator.pop(context,newLocation);
       print('Latitude: $lat, Longitude: $long');
     }
     setState(() => _isLoading = false);
@@ -226,17 +299,17 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
   }
 }
 
-class FavoriteLocation {
-  final String cityName;
-  final int temperature;
-  final String comfortLevel;
-  final int humidity;
-
-  FavoriteLocation(
-      {required this.cityName,
-      required this.temperature,
-      required this.comfortLevel,
-      required this.humidity});
-}
+// class FavoriteLocation {
+//   final String cityName;
+//   final double temperature;
+//   final String comfortLevel;
+//   final double humidity;
+//
+//   FavoriteLocation(
+//       {required this.cityName,
+//         required this.temperature,
+//         required this.comfortLevel,
+//         required this.humidity});
+// }
 
 void main() => runApp(Location());

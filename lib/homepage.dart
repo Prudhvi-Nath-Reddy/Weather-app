@@ -196,23 +196,23 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
         (c9 * T * T * RH * RH));
     if(HI <=80)
     {
-      s = "Safe" ;
+      s = "Comfortable" ;
     }
     else if(HI <=90)
     {
-      s = "OK" ;
+      s = "Good" ;
     }
     else if(HI <=103)
     {
-      s = "Caution" ;
+      s = "Average" ;
     }
     else if(HI <=124)
     {
-      s = "Not OK" ;
+      s = "Not Good" ;
     }
     else if(HI > 124)
     {
-      s = "Danger" ;
+      s = "Bad" ;
     }
     return s;
   }
@@ -263,7 +263,9 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
 
 
       hl = (ht['humidity'] ?? 0.0).toStringAsFixed(2);
+
       temp = hfah.toStringAsFixed(2);
+      Singleton().prelev = "Humidity : $hl , Temperature ; $temp";
 
     });
     return ;
@@ -451,23 +453,23 @@ String determineLevel2(double T, double RH) {
       (c9 * T * T * RH * RH));
   if(HI <=80)
   {
-    s = "Safe" ;
+    s = "Comfortable" ;
   }
   else if(HI <=90)
   {
-    s = "OK" ;
+    s = "Good" ;
   }
   else if(HI <=103)
   {
-    s = "Caution" ;
+    s = "Average" ;
   }
   else if(HI <=124)
   {
-    s = "Not OK" ;
+    s = "Not Good" ;
   }
   else if(HI > 124)
   {
-    s = "Danger" ;
+    s = "Bad" ;
   }
   return s;
 }
@@ -524,7 +526,7 @@ class _WeeklyForecastListState extends State<WeeklyForecastList> {
     String prev = DateFormat('yyyy-MM-dd').format(previousDate);
     print("cp 2.1") ;
     Position position = await Geolocator.getCurrentPosition();
-    var ht = await fetchHumidity(start, end, hour, position.longitude, position.latitude);
+    var ht = await fetchHumidity(start, end, hour+24, position.longitude, position.latitude);
     double hm1= (ht['humidity'] ?? 0.0) ;
     double temp = (ht['temperature'] ?? 0.0) ;
     List<String> newHumidities = ["------","------","------","------","------","------","------"] ;
@@ -533,7 +535,7 @@ class _WeeklyForecastListState extends State<WeeklyForecastList> {
     newHumidities[0] = await determineLevel2(temp,hm1);
     print("cp 2.3") ;
     for (int i = 1; i < 7; i++) {
-      int add = (i - 1) * 24;
+      int add = (i) * 24;
       var ht = await fetchHumidity(start, end, hour+add, position.longitude, position.latitude);
       double h0= (ht['humidity'] ?? 0.0) ;
       double temp = (ht['temperature'] ?? 0.0) ;

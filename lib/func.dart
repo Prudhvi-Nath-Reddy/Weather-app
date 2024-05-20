@@ -30,16 +30,62 @@ String today()
   return tod ;
 
 }
+class FavoriteLocation {
+  final String cityName;
+  final double temperature;
+  final String comfortLevel;
+  final double humidity;
+
+  FavoriteLocation(
+      {required this.cityName,
+        required this.temperature,
+        required this.comfortLevel,
+        required this.humidity});
+}
+// class Singleton {
+//   static final Singleton _singleton = Singleton._internal();
+//
+//   String mapurl2 = "https://harsha-deep.github.io/projects/gee-humidity/map1.html";
+//   String bardate = today() ;
+//   String prelev = "--.--" ;
+//   List<FavoriteLocation> favoriteLocations =  [];
+//   factory Singleton() {
+//     return _singleton;
+//   }
+//
+//   Singleton._internal();
+// }
 class Singleton {
   static final Singleton _singleton = Singleton._internal();
 
+  List<FavoriteLocation> favoriteLocations = [];
+
   String mapurl2 = "https://harsha-deep.github.io/projects/gee-humidity/map1.html";
-  String bardate = today() ;
+  String bardate = today(); // Ensuring today's date is captured
+  String prelev = "--.--";
+
   factory Singleton() {
     return _singleton;
   }
 
   Singleton._internal();
+
+  // Add a location to the list
+  void addLocation(FavoriteLocation location) {
+    favoriteLocations.add(location);
+  }
+
+  // Remove a location from the list
+  void removeLocation(int index) {
+    if (index >= 0 && index < favoriteLocations.length) {
+      favoriteLocations.removeAt(index);
+    }
+  }
+
+  // Get all locations
+  List<FavoriteLocation> getLocations() {
+    return favoriteLocations;
+  }
 }
 
 
