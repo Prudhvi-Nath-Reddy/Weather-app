@@ -264,7 +264,7 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
 
       hl = (ht['humidity'] ?? 0.0).toStringAsFixed(2);
       comfort = rets ;
-      temp = hfah.toStringAsFixed(2);
+      temp = hfah.toStringAsFixed(0);
       Singleton().prelev = "Humidity : $hl , Temperature ; $temp";
 
     });
@@ -325,7 +325,7 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
               const Icon(Icons.energy_savings_leaf, color: Colors.white),
               const SizedBox(width: 5),
               Text(
-                'Comfort level: '+comfort,
+                'Comfort: '+comfort,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
               ),
               const SizedBox(width: 10),
@@ -345,10 +345,17 @@ class _CurrentWeatherSectionState extends State<CurrentWeatherSection> {
               const SizedBox(height: 10),
               Text(
 
-                t,
+                '$t°',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white,fontSize: 70),
 
               ),
+              Text(
+
+                'C',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white,fontSize: 30),
+
+              ),
+
             ],
           ),
         ],
